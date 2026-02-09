@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Search Exercises - FitTrack</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .exercise-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    .exercise-card{ background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; }
+    .exercise-card img{ width:100%; border-radius:8px; }
+    .search-bar{ display:flex; gap:8px; margin-bottom:12px; }
+    .muted{ color: #cfe8ff; }
+  </style>
+</head>
+<body>
+  <header class="container">
+    <h1>Exercise Catalog</h1>
+    <nav class="nav"><a href="/">Home</a> <a href="/contact">Contact</a></nav>
+  </header>
+
+  <main class="container content">
+    <section>
+      <div class="search-bar">
+        <input id="q" type="text" placeholder="Search exercises, e.g. squat" style="flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#e6eef8;"/>
+        <button id="btn" style="padding:8px 12px;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent3));border:none;color:#fff;">Search</button>
+      </div>
+      <p class="muted">Tip: search by name or muscle group.</p>
+    </section>
+
+    <section>
+      <div class="exercise-grid" id="grid">
+        <!-- Exercise cards inserted by JS -->
+      </div>
+    </section>
+  </main>
+  <script>
+    const exercises = [
+      { id:1, name:'Barbell Squat', muscle:'legs', desc:'Compound lower-body exercise.', img:'https://picsum.photos/seed/barbell-squat/600/400' },
+      { id:2, name:'Deadlift', muscle:'back', desc:'Posterior chain strength lift.', img:'https://picsum.photos/seed/deadlift-lift/600/400' },
+      { id:3, name:'Bench Press', muscle:'chest', desc:'Upper-body pushing movement.', img:'https://picsum.photos/seed/bench-press/600/400' },
+      { id:4, name:'Pull-Up', muscle:'back', desc:'Bodyweight pulling movement.', img:'https://picsum.photos/seed/pullup-bar/600/400' },
+      { id:5, name:'Plank', muscle:'core', desc:'Isometric core stability exercise.', img:'https://picsum.photos/seed/plank-core/600/400' }
+    ];
+
+    function render(list){
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      list.forEach(e => {
+        const el = document.createElement('div'); el.className='exercise-card';
+        el.innerHTML = `<img src="${e.img}" alt="${e.name}"><h3>${e.name}</h3><p>${e.desc}</p><p><strong>Primary:</strong> ${e.muscle}</p><p><a href="/item/${e.id}">Open item</a></p>`;
+        grid.appendChild(el);
+      });
+    }
+
+    render(exercises);
+
+    document.getElementById('btn').addEventListener('click', ()=>{
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      if(!q){ render(exercises); return; }
+      const filtered = exercises.filter(e => e.name.toLowerCase().includes(q) || e.muscle.toLowerCase().includes(q));
+      render(filtered);
+    });
+
+    // if page opened with ?q= param, prefill and search
+    const params = new URLSearchParams(location.search);
+    if(params.get('q')){
+      document.getElementById('q').value = params.get('q');
+      document.getElementById('btn').click();
+    }
+  </script>
+  <script src="/app.js"></script>
+</body>
+</html>

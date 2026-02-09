@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitTrack</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>FitTrack</h1>
+    <p class="tagline">Simple fitness tracking and workout planning web app (prototype)</p>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/search">Search</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- Top banner -->
+  <div class="container" style="margin-top:12px;">
+    <div class="accent-card" style="display:flex;gap:12px;align-items:center;justify-content:space-between;">
+      <div style="flex:1;">
+        <h2 style="margin:0 0 8px;">Track your progress. Build healthy habits.</h2>
+        <p style="margin:0 0 12px;">FitTrack helps you log workouts, plan training, and monitor progress. Lightweight, mobile-friendly prototype.</p>
+        <a class="chip" href="/search" data-no-ajax>Explore exercises</a>
+        <a class="chip" href="/contact" data-no-ajax>Contact team</a>
+      </div>
+      <div style="width:260px;flex-shrink:0;">
+        <img src="https://avatars.mds.yandex.net/i?id=1e5dbd37832ff67345b9e9c8feac533ef740a557-5869639-images-thumbs&n=13" alt="gym banner" style="width:100%;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.3);object-fit:cover;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero images (kept) -->
+  <div class="container hero">
+    <div class="hero-img-wrapper">
+      <img class="hero-img" src="https://avatars.mds.yandex.net/i?id=b4746c4e31ce27b6eb07ef2158d0d01e419bf1f9-5878096-images-thumbs&n=13" alt="gym workout" />
+    </div>
+    <div class="hero-img-wrapper">
+      <img class="hero-img" src="https://picsum.photos/seed/gym-weights/1200/800" alt="weights" />
+    </div>
+  </div>
+
+  <main class="container content">
+    <section>
+      <h2>Project Description</h2>
+      <p>FitTrack will allow users to log workouts, track progress, and create personalized plans. This assignment delivers the Express setup and the landing page.</p>
+    </section>
+
+    <section class="accent-card">
+      <h2>Key Features</h2>
+      <ul>
+        <li>Workout logging and progress history</li>
+        <li>Exercise search and templates</li>
+        <li>Save plans and export</li>
+      </ul>
+    </section>
+
+    <!-- Quick Search (kept) -->
+    <section class="accent-card">
+      <h2>Quick Search</h2>
+      <form action="/search" method="get">
+        <input type="text" name="q" placeholder="Search workouts or items">
+        <button type="submit">Search</button>
+      </form>
+    </section>
+
+    <!-- Contact (restored on home page) -->
+    <section class="accent-card" id="contact-section">
+      <h2>Contact Us</h2>
+      <p>Lead: Mussilimov Zhangir (Group SE-2422)</p>
+      <p>Email: <a href="mailto:team@fittrack.example">team@fittrack.example</a></p>
+      <form action="/contact" method="post">
+        <label>Name<br><input type="text" name="name" required></label><br><br>
+        <label>Email<br><input type="email" name="email" required></label><br><br>
+        <label>Message<br><textarea name="message" rows="4" required></textarea></label><br><br>
+        <button type="submit">Send Message</button>
+      </form>
+    </section>
+
+    <!-- API links (kept) -->
+    <section class="accent-card">
+      <h2>API Test Links</h2>
+      <p>Quick links to test the JSON API:</p>
+      <ul>
+        <li><a href="/api/items">/api/items</a></li>
+        <li><a href="/api/items/1">/api/items/1</a></li>
+      </ul>
+    </section>
+
+    <footer class="footer">
+      <p>© FitTrack Team</p>
+    </footer>
+  </main>
+  
+  <script src="/app.js"></script>
+</body>
+</html>

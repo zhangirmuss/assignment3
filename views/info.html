@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>API Info - FitTrack</title>
+  <link rel="stylesheet" href="/style.css">
+  <style> pre{ background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; overflow:auto; }</style>
+</head>
+<body>
+  <header class="container">
+    <h1>API Info</h1>
+    <nav class="nav"><a href="/">Home</a> <a href="/items">Items</a> <a href="/contact">Contact</a></nav>
+  </header>
+  <main class="container content">
+    <section>
+      <h2>/api/info</h2>
+      <pre id="out">Loading...</pre>
+    </section>
+  </main>
+  <script>
+    fetch('/api/info').then(r=>r.json()).then(j=>{
+      document.getElementById('out').textContent = JSON.stringify(j, null, 2);
+    }).catch(e=>{ document.getElementById('out').textContent = 'Error fetching info'; });
+  </script>
+</body>
+</html>

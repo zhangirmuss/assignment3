@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard - FitTrack</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .form-row { display:flex; gap:8px; margin-bottom:8px; }
+    input[type="text"], textarea { padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit; }
+    button { padding:8px 12px; border-radius:6px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent3)); color:#fff; cursor:pointer; }
+    .muted { color: #9fb7d6; }
+    .actions button { margin-right:6px; }
+  </style>
+</head>
+<body>
+  <header class="container">
+    <h1>Admin Dashboard</h1>
+    <nav class="nav"><a href="/">Home</a> <a href="/items">Items</a> <a href="/info">Info</a></nav>
+  </header>
+
+  <main class="container content">
+    <section class="accent-card">
+      <h2>Manage Items</h2>
+      <div style="margin-bottom:12px; display:flex; gap:8px; align-items:center;">
+        <input id="search-q" type="text" placeholder="Search (title, muscle)" style="flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;">
+        <select id="sort-by" style="padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;">
+          <option value="">Sort: none</option>
+          <option value="title:asc">Title ↑</option>
+          <option value="title:desc">Title ↓</option>
+          <option value="durationMinutes:asc">Duration ↑</option>
+          <option value="durationMinutes:desc">Duration ↓</option>
+        </select>
+        <button id="apply-filters">Apply</button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <form id="create-form">
+          <div class="form-row">
+            <input id="title" type="text" placeholder="Title">
+            <input id="description" type="text" placeholder="Description">
+            <input id="muscle" type="text" placeholder="Muscle">
+            <input id="difficulty" type="text" placeholder="Difficulty">
+            <input id="duration" type="number" placeholder="Duration (min)" style="width:110px;">
+            <button type="submit">Create</button>
+          </div>
+        </form>
+      </div>
+      <div>
+        <table class="table" id="items-table">
+          <thead>
+            <tr><th>Id</th><th>Title</th><th>Description</th><th>Muscle</th><th>Difficulty</th><th>Duration</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="items-body">
+            <tr><td colspan="7" class="muted">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="accent-card" style="margin-top:12px;">
+      <h2>Edit Item</h2>
+      <form id="edit-form">
+        <input id="edit-id" type="hidden">
+        <div class="form-row">
+          <input id="edit-title" type="text" placeholder="Title">
+          <input id="edit-description" type="text" placeholder="Description">
+          <input id="edit-muscle" type="text" placeholder="Muscle">
+          <input id="edit-difficulty" type="text" placeholder="Difficulty">
+          <input id="edit-duration" type="number" placeholder="Duration (min)" style="width:110px;">
+          <button type="submit">Update</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/dashboard.js"></script>
+</body>
+</html>

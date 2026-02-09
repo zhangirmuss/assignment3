@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>API Stats - FitTrack</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="container">
+    <h1>API Stats</h1>
+    <nav class="nav"><a href="/">Home</a> <a href="/info">Info</a> <a href="/items">Items</a></nav>
+  </header>
+  <main class="container content">
+    <section>
+      <h2>/api/stats</h2>
+      <ul id="list"><li>Loading...</li></ul>
+    </section>
+  </main>
+  <script>
+    fetch('/api/stats').then(r=>r.json()).then(j=>{
+      const ul = document.getElementById('list'); ul.innerHTML='';
+      ul.innerHTML = `<li>Items: ${j.itemsCount}</li><li>Contacts: ${j.contactsCount}</li><li>Uptime (s): ${j.uptimeSeconds}</li>`;
+    }).catch(e=>{ document.getElementById('list').innerHTML = '<li>Failed to load stats</li>' });
+  </script>
+</body>
+</html>

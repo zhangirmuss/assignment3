@@ -1,0 +1,17 @@
+{
+  "name": "fitness-app",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^4.22.1",
+    "mongodb": "^6.5.0",
+    "sqlite-database": "^1.1.0",
+    "bcrypt": "^5.1.0",
+    "express-session": "^1.17.3",
+    "connect-mongo": "^4.6.0"
+  }
+}

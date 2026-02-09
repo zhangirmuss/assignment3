@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Contact - FitTrack</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="container">
+    <h1>Contact Us</h1>
+    <nav class="nav"><a href="/">Home</a> <a href="/search">Search</a></nav>
+  </header>
+
+  <main class="container content">
+    <section class="accent-card">
+      <h2>Team & Contact</h2>
+      <p>Lead: Mussilimov Zhangir (Group SE-2422)</p>
+      <p>Email: <a href="mailto:team@fittrack.example">team@fittrack.example</a></p>
+      <p>Office: Practice Lab, Building A</p>
+    </section>
+
+    <section class="accent-card">
+      <h2>Send us a message</h2>
+      <form action="/contact" method="post">
+        <label>Name<br><input type="text" name="name" required></label><br><br>
+        <label>Email<br><input type="email" name="email" required></label><br><br>
+        <label>Message<br><textarea name="message" rows="6" required></textarea></label><br><br>
+        <button type="submit">Send Message</button>
+      </form>
+    </section>
+
+    <section class="accent-card">
+      <h2>Visit</h2>
+      <p>Placeholder map and opening hours.</p>
+      <img src="https://picsum.photos/seed/gym-location/800/300" alt="gym map" style="width:100%;border-radius:8px;object-fit:cover;" />
+    </section>
+
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

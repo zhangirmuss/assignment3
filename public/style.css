@@ -1,0 +1,197 @@
+/* Basic reset and typography */
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f7f9fc;
+  color: #222;
+}
+
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 16px;
+}
+
+header.container {
+  text-align: center;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(28, 46, 78, 0.06);
+}
+
+h1 {
+  margin: 20px 0 8px;
+  color: #1f6feb;
+}
+
+.tagline {
+  margin: 0 0 12px;
+  color: #4b5563;
+}
+
+.nav {
+  margin-bottom: 12px;
+}
+
+.nav a {
+  margin: 0 8px;
+  color: #1f6feb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.content {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(28, 46, 78, 0.06);
+}
+
+h2 {
+  color: #0f1724;
+  margin-top: 8px;
+}
+
+ul, ol {
+  color: #333;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  color: #64748b;
+}
+
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  h1 { font-size: 1.5rem; }
+}
+
+/* Dark theme variables */
+:root{
+  --bg-dark: #071029;
+  --panel: #0f1724;
+  --accent:#ff4d6d; /* яркий розово-красный */
+  --accent2:#00d4ff; /* яркий циан */
+  --accent3:#7c3aed; /* яркий фиолетовый */
+  --accent4:#22c55e; /* яркий лаймовый */
+  --muted:#94a3b8;
+}
+
+/* Dark theme styles */
+body{
+  /* тёмный фон с лёгким градиентом */
+  background: radial-gradient(circle at 10% 10%, rgba(0,212,255,0.04), transparent 20%), linear-gradient(135deg,var(--bg-dark) 0%, #02132a 100%);
+  color: #e6eef8;
+}
+
+header.container{
+  /* тёмный панельный хедер с акцентом */
+  text-align: center;
+  background: linear-gradient(90deg, rgba(17,24,39,0.92), rgba(12,34,65,0.9));
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(2,6,23,0.6);
+  color: #fff;
+}
+
+h1{
+  margin: 20px 0 8px;
+  color: var(--accent);
+  text-shadow: 0 6px 24px rgba(255,77,109,0.08);
+}
+
+.tagline{ color: #cfe8ff; }
+
+.nav a{
+  margin: 0 8px;
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.nav a:hover{ color: #fff; text-decoration: underline; }
+
+.content{
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+  color: #e6eef8;
+}
+
+h2{ color: #e6f7ff; margin-top: 8px; }
+
+ul, ol{ color: #dbeeff; }
+
+.footer{ text-align: center; margin-top: 20px; color: #9fb7d6; }
+
+/* Hero / images */
+.hero{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  align-items:stretch;
+  margin:18px 0 6px;
+}
+
+.hero-img-wrapper{
+  /* wrapper provides gradient frame */
+  flex: 1 1 48%;
+  height: 360px;
+  padding: 6px; /* frame thickness */
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3), var(--accent2));
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(2,6,23,0.6);
+}
+
+.hero-img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* ensure the image fully covers the area */
+  border-radius: 10px;
+  border: 4px solid transparent;
+  background-clip: padding-box;
+}
+
+/* responsive tweaks */
+@media (max-width: 900px){
+  .hero-img{ width:100%; height:100%; object-fit:cover; }
+  .hero{flex-direction:column; align-items:stretch;}
+  .hero-img-wrapper{ width:100%; height:220px; }
+}
+
+/* Accent decorations */
+.badge{
+  display: inline-block;
+  background: linear-gradient(90deg,var(--accent),var(--accent3));
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(124,58,237,0.18);
+}
+
+.chip{
+  display:inline-block;
+  background: rgba(255,255,255,0.03);
+  color: var(--accent2);
+  padding:6px 8px;
+  border-radius:8px;
+  margin-right:6px;
+  border:1px solid rgba(255,255,255,0.03);
+}
+
+.accent-card{
+  background: linear-gradient(180deg, rgba(0,212,255,0.04), rgba(124,58,237,0.04));
+  border-left: 4px solid var(--accent4);
+  padding:12px;
+  border-radius:8px;
+  margin:10px 0;
+}
+
+/* small accent for links */
+a{ color: var(--accent2); }
+
+a:hover{ color: var(--accent); }
