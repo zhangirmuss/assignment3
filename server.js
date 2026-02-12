@@ -35,10 +35,11 @@ app.use(express.urlencoded({ extended: true })); // for HTML forms
 app.use(express.json()); // for JSON API
 
 // session store
+// session store (connect-mongo v5+)
 let store = undefined;
 if (MongoStore && MONGO_URI) {
   try {
-    store = MongoStore.create({
+    store = new MongoStore({
       mongoUrl: MONGO_URI,
       dbName: DB_NAME,
       collectionName: 'sessions'
@@ -48,6 +49,7 @@ if (MongoStore && MONGO_URI) {
     store = undefined;
   }
 }
+
 
 app.use(session({
   name: 'sessionId',
