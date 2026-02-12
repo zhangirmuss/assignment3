@@ -25,6 +25,10 @@ const MONGO_URI = process.env.MONGO_URI;           // REQUIRED for Atlas
 const DB_NAME = process.env.DB_NAME || 'fittrack';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'change-this-secret';
 
+// Render/Proxy-friendly cookies
+app.set('trust proxy', 1);
+const isProd = process.env.NODE_ENV === 'production';
+
 // ensure data directory exists
 const DATA_DIR = path.join(__dirname, 'data');
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) { console.error('Failed to create data dir', e); }
@@ -34,7 +38,6 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // for HTML forms
 app.use(express.json()); // for JSON API
 
-// session store
 // session store (connect-mongo v5+)
 let store = undefined;
 if (MongoStore && MONGO_URI) {
@@ -50,7 +53,6 @@ if (MongoStore && MONGO_URI) {
   }
 }
 
-
 app.use(session({
   name: 'sessionId',
   secret: SESSION_SECRET,
@@ -59,7 +61,8 @@ app.use(session({
   store,
   cookie: {
     httpOnly: true,
-    secure: false, // true only with HTTPS
+    secure: isProd,          // ✅ true on Render/HTTPS
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 // 1 day
   }
 }));
@@ -81,19 +84,16 @@ app.get('/', (req, res) => {
   res.type('html').sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-// (optional) keep these if you still have separate html files
 app.get('/contact', (req, res) => res.type('html').sendFile(path.join(__dirname, 'views', 'contact.html')));
 app.get('/search', (req, res) => res.type('html').sendFile(path.join(__dirname, 'views', 'search.html')));
 app.get('/dashboard', (req, res) => res.type('html').sendFile(path.join(__dirname, 'views', 'dashboard.html')));
 
 // ---------------- AUTH ----------------
-// who is logged in?
 app.get('/auth/me', (req, res) => {
   const user = req.session?.user || null;
   res.json({ user });
 });
 
-// register (creates user in MongoDB)
 app.post('/auth/register', async (req, res) => {
   if (!bcrypt) return res.status(500).json({ error: 'bcrypt not installed on server' });
 
@@ -108,7 +108,6 @@ app.post('/auth/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await usersCol.insertOne({ username, passwordHash, role: 'user', createdAt: new Date() });
 
-    // session
     req.session.user = { id: String(result.insertedId), username, role: 'user' };
     res.json({ success: true });
   } catch (err) {
@@ -117,7 +116,6 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-// login
 app.post('/auth/login', async (req, res) => {
   if (!bcrypt) return res.status(500).json({ error: 'bcrypt not installed on server' });
 
@@ -140,7 +138,6 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// logout
 app.post('/auth/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
 });
@@ -191,12 +188,21 @@ app.get('/api/info', async (req, res) => {
     res.json({
       project: 'FitTrack',
       database: { type: 'mongodb', db: DB_NAME },
+      security: {
+        auth: 'express-session + MongoStore',
+        roles: ['user', 'admin'],
+        writeAccess: {
+          create: 'auth required',
+          update: 'owner OR admin',
+          delete: 'owner OR admin'
+        }
+      },
       routes: [
         'GET /api/items (or /api/exercises)',
         'GET /api/items/:id',
         'POST /api/items (login required)',
-        'PUT /api/items/:id (login required)',
-        'DELETE /api/items/:id (login required)',
+        'PUT /api/items/:id (owner OR admin)',
+        'DELETE /api/items/:id (owner OR admin)',
         'POST /auth/register',
         'POST /auth/login',
         'POST /auth/logout',
@@ -232,10 +238,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ---------------- API ROUTES ----------------
-// Your router expects: req.app.locals.exercisesCol and session checks inside router
 const itemsRouter = require('./routes/items');
-
-// mount BOTH to avoid confusion in frontend
 app.use('/api/items', itemsRouter);
 app.use('/api/exercises', itemsRouter);
 
@@ -253,7 +256,13 @@ let mongoClient;
 async function start() {
   try {
     if (!MONGO_URI) {
-      console.error('❌ MONGO_URI is not set in .env');
+      console.error('❌ MONGO_URI is not set');
+      process.exit(1);
+    }
+
+    // Optional security check (recommended):
+    if (isProd && SESSION_SECRET === 'change-this-secret') {
+      console.error('❌ SESSION_SECRET is not set properly for production');
       process.exit(1);
     }
 
@@ -262,7 +271,6 @@ async function start() {
 
     const db = mongoClient.db(DB_NAME);
 
-    // collections
     app.locals.exercisesCol = db.collection('exercises');
     app.locals.usersCol = db.collection('users');
 
@@ -272,40 +280,40 @@ async function start() {
     const cnt = await app.locals.exercisesCol.countDocuments();
     if (cnt === 0) {
       await app.locals.exercisesCol.insertMany([
-        { title: 'Push Up', description: 'Basic upper-body pushing exercise.', muscle: 'chest', difficulty: 'beginner', durationMinutes: 5, createdAt: new Date() },
-        { title: 'Squat', description: 'Compound lower-body exercise.', muscle: 'legs', difficulty: 'beginner', durationMinutes: 8, createdAt: new Date() },
-        { title: 'Plank', description: 'Core stability exercise.', muscle: 'core', difficulty: 'beginner', durationMinutes: 5, createdAt: new Date() }
+        { title: 'Push Up', description: 'Basic upper-body pushing exercise.', muscle: 'chest', difficulty: 'beginner', durationMinutes: 5, createdAt: new Date(), createdBy: 'seed' },
+        { title: 'Squat', description: 'Compound lower-body exercise.', muscle: 'legs', difficulty: 'beginner', durationMinutes: 8, createdAt: new Date(), createdBy: 'seed' },
+        { title: 'Plank', description: 'Core stability exercise.', muscle: 'core', difficulty: 'beginner', durationMinutes: 5, createdAt: new Date(), createdBy: 'seed' }
       ]);
       console.log('✅ Seeded exercises');
     }
 
-    // seed admin user
     // seed admin user (from env, no hardcoded passwords)
-if (bcrypt) {
-  const usersCol = app.locals.usersCol;
+    if (bcrypt) {
+      const usersCol = app.locals.usersCol;
 
-  const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+      const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-  if (ADMIN_USERNAME && ADMIN_PASSWORD) {
-    const adminExists = await usersCol.findOne({ username: ADMIN_USERNAME });
-    if (!adminExists) {
-      const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-      await usersCol.insertOne({
-        username: ADMIN_USERNAME,
-        passwordHash,
-        role: 'admin',
-        createdAt: new Date()
-      });
-      console.log('✅ Seeded admin user from env:', ADMIN_USERNAME);
+      if (ADMIN_USERNAME && ADMIN_PASSWORD) {
+        const adminExists = await usersCol.findOne({ username: ADMIN_USERNAME });
+        if (!adminExists) {
+          const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+          await usersCol.insertOne({
+            username: ADMIN_USERNAME,
+            passwordHash,
+            role: 'admin',
+            createdAt: new Date()
+          });
+          console.log('✅ Seeded admin user from env:', ADMIN_USERNAME);
+        } else {
+          console.log('ℹ️ Admin already exists:', ADMIN_USERNAME);
+        }
+      } else {
+        console.warn('⚠️ ADMIN_USERNAME / ADMIN_PASSWORD not set -> admin not seeded.');
+      }
+    } else {
+      console.warn('⚠️ bcrypt missing -> cannot seed admin user.');
     }
-  } else {
-    console.warn('⚠️ ADMIN_USERNAME / ADMIN_PASSWORD not set -> admin not seeded.');
-  }
-} else {
-  console.warn('⚠️ bcrypt missing -> cannot seed admin user.');
-}
-
 
     app.listen(PORT, () => {
       console.log(`✅ Server running: http://localhost:${PORT}`);

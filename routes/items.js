@@ -2,10 +2,47 @@ const express = require('express');
 const { ObjectId } = require('mongodb');
 const router = express.Router();
 
-// ✅ middleware: require login (sessions-based)
+// ✅ require login (sessions-based)
 function requireAuth(req, res, next) {
   if (req.session && req.session.user) return next();
   return res.status(401).json({ error: 'Unauthorized' });
+}
+
+// ✅ require admin role
+function requireAdmin(req, res, next) {
+  const user = req.session?.user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+  if (user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  next();
+}
+
+// ✅ owner OR admin
+async function requireOwnerOrAdmin(req, res, next) {
+  const user = req.session?.user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  if (user.role === 'admin') return next();
+
+  const id = req.params.id;
+  if (!ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid id' });
+
+  try {
+    const oid = new ObjectId(id);
+    const existing = await req.app.locals.exercisesCol.findOne({ _id: oid });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+
+    // owner check (you store createdBy=username)
+    if (existing.createdBy !== user.username) {
+      return res.status(403).json({ error: 'Forbidden (owner only)' });
+    }
+
+    // pass existing forward to avoid double query
+    req._existingItem = existing;
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
 }
 
 // helper: parse durationMinutes safely
@@ -52,7 +89,8 @@ router.get('/', async (req, res) => {
       description: i.description,
       muscle: i.muscle ?? null,
       difficulty: i.difficulty ?? null,
-      durationMinutes: i.durationMinutes ?? null
+      durationMinutes: i.durationMinutes ?? null,
+      createdBy: i.createdBy ?? null
     }));
 
     res.json(out);
@@ -77,7 +115,8 @@ router.get('/:id', async (req, res) => {
       description: row.description,
       muscle: row.muscle ?? null,
       difficulty: row.difficulty ?? null,
-      durationMinutes: row.durationMinutes ?? null
+      durationMinutes: row.durationMinutes ?? null,
+      createdBy: row.createdBy ?? null
     });
   } catch (err) {
     console.error(err);
@@ -85,7 +124,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/exercises (protected)
+// POST /api/exercises (login required)
 router.post('/', requireAuth, async (req, res) => {
   const { title, description, muscle, difficulty } = req.body || {};
   const durationMinutes = parseDuration(req.body?.durationMinutes);
@@ -101,7 +140,7 @@ router.post('/', requireAuth, async (req, res) => {
       difficulty: difficulty || null,
       durationMinutes,
       createdAt: new Date(),
-      createdBy: req.session.user.username // nice for assignment demo
+      createdBy: req.session.user.username
     });
 
     const item = await req.app.locals.exercisesCol.findOne({ _id: result.insertedId });
@@ -111,7 +150,8 @@ router.post('/', requireAuth, async (req, res) => {
       description: item.description,
       muscle: item.muscle ?? null,
       difficulty: item.difficulty ?? null,
-      durationMinutes: item.durationMinutes ?? null
+      durationMinutes: item.durationMinutes ?? null,
+      createdBy: item.createdBy ?? null
     });
   } catch (err) {
     console.error(err);
@@ -119,11 +159,9 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// PUT /api/exercises/:id (protected)
-router.put('/:id', requireAuth, async (req, res) => {
+// PUT /api/exercises/:id (owner OR admin)
+router.put('/:id', requireAuth, requireOwnerOrAdmin, async (req, res) => {
   const id = req.params.id;
-  if (!ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid id' });
-
   const { title, description, muscle, difficulty } = req.body || {};
   const durationMinutes = parseDuration(req.body?.durationMinutes);
 
@@ -132,8 +170,6 @@ router.put('/:id', requireAuth, async (req, res) => {
 
   try {
     const oid = new ObjectId(id);
-    const existing = await req.app.locals.exercisesCol.findOne({ _id: oid });
-    if (!existing) return res.status(404).json({ error: 'Not found' });
 
     await req.app.locals.exercisesCol.updateOne(
       { _id: oid },
@@ -156,7 +192,8 @@ router.put('/:id', requireAuth, async (req, res) => {
       description: updated.description,
       muscle: updated.muscle ?? null,
       difficulty: updated.difficulty ?? null,
-      durationMinutes: updated.durationMinutes ?? null
+      durationMinutes: updated.durationMinutes ?? null,
+      createdBy: updated.createdBy ?? null
     });
   } catch (err) {
     console.error(err);
@@ -164,16 +201,13 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /api/exercises/:id (protected)
-router.delete('/:id', requireAuth, async (req, res) => {
+// DELETE /api/exercises/:id (owner OR admin)
+// If your rubric wants admin-only delete, change middleware to: requireAuth, requireAdmin
+router.delete('/:id', requireAuth, requireOwnerOrAdmin, async (req, res) => {
   const id = req.params.id;
-  if (!ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid id' });
 
   try {
     const oid = new ObjectId(id);
-    const existing = await req.app.locals.exercisesCol.findOne({ _id: oid });
-    if (!existing) return res.status(404).json({ error: 'Not found' });
-
     await req.app.locals.exercisesCol.deleteOne({ _id: oid });
     res.json({ success: true });
   } catch (err) {
