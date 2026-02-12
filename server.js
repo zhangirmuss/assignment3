@@ -280,22 +280,32 @@ async function start() {
     }
 
     // seed admin user
-    if (bcrypt) {
-      const usersCol = app.locals.usersCol;
-      const adminExists = await usersCol.findOne({ username: 'admin' });
-      if (!adminExists) {
-        const passwordHash = await bcrypt.hash('adminpass', 10);
-        await usersCol.insertOne({
-          username: 'admin',
-          passwordHash,
-          role: 'admin',
-          createdAt: new Date()
-        });
-        console.log('✅ Seeded admin user: admin/adminpass');
-      }
-    } else {
-      console.warn('⚠️ bcrypt missing -> cannot seed admin user.');
+    // seed admin user (from env, no hardcoded passwords)
+if (bcrypt) {
+  const usersCol = app.locals.usersCol;
+
+  const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+  if (ADMIN_USERNAME && ADMIN_PASSWORD) {
+    const adminExists = await usersCol.findOne({ username: ADMIN_USERNAME });
+    if (!adminExists) {
+      const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+      await usersCol.insertOne({
+        username: ADMIN_USERNAME,
+        passwordHash,
+        role: 'admin',
+        createdAt: new Date()
+      });
+      console.log('✅ Seeded admin user from env:', ADMIN_USERNAME);
     }
+  } else {
+    console.warn('⚠️ ADMIN_USERNAME / ADMIN_PASSWORD not set -> admin not seeded.');
+  }
+} else {
+  console.warn('⚠️ bcrypt missing -> cannot seed admin user.');
+}
+
 
     app.listen(PORT, () => {
       console.log(`✅ Server running: http://localhost:${PORT}`);
